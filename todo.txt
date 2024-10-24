@@ -1,0 +1,2 @@
+- setup the main function to run the program
+- integrate charms and  cobra.

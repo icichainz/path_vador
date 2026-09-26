@@ -43,6 +43,9 @@ func ExportCommand(shell Shell, name, value string) (string, error) {
 	case ShellPowerShell:
 		return fmt.Sprintf("$Env:%s = %s", name, quoteForPowerShell(value)), nil
 	case ShellCMD:
+		if err := validateCMDValue(value); err != nil {
+			return "", err
+		}
 		return fmt.Sprintf("set \"%s=%s\"", name, value), nil
 	default:
 		return "", fmt.Errorf("unsupported shell %q", shell)
@@ -82,14 +85,17 @@ func normalizeShell(shellName string) (Shell, error) {
 	}
 }
 
+// detectShell guesses the target shell from SHELL. COMSPEC is deliberately
+// ignored: Windows always points it at cmd.exe, whatever shell is running.
 func detectShell(goos string, lookupEnv func(string) string) Shell {
-	shellHint := strings.ToLower(strings.TrimSpace(lookupEnv("SHELL") + " " + lookupEnv("COMSPEC")))
+	shellHint := strings.ToLower(strings.TrimSpace(lookupEnv("SHELL")))
 
 	switch {
 	case strings.Contains(shellHint, "pwsh"), strings.Contains(shellHint, "powershell"):
 		return ShellPowerShell
-	case strings.Contains(shellHint, "cmd.exe"):
-		return ShellCMD
+	case shellHint != "":
+		// Git Bash, MSYS2, Cygwin and every Unix shell set SHELL.
+		return ShellSH
 	case goos == "windows":
 		return ShellPowerShell
 	default:
@@ -109,6 +115,24 @@ func quoteForSH(value string) string {
 	return "'" + strings.ReplaceAll(value, "'", `'"'"'`) + "'"
 }
 
+// powerShellQuotes lists every character PowerShell treats as a single quote.
+var powerShellQuotes = strings.NewReplacer(
+	"'", "''",
+	"\u2018", "\u2018\u2018",
+	"\u2019", "\u2019\u2019",
+	"\u201A", "\u201A\u201A",
+	"\u201B", "\u201B\u201B",
+)
+
 func quoteForPowerShell(value string) string {
-	return "'" + strings.ReplaceAll(value, "'", "''") + "'"
+	return "'" + powerShellQuotes.Replace(value) + "'"
+}
+
+// validateCMDValue rejects characters that cannot be escaped safely inside
+// cmd's set "NAME=VALUE" form: quotes end the string, % and ! expand variables.
+func validateCMDValue(value string) error {
+	if i := strings.IndexAny(value, "\"%!\r\n"); i >= 0 {
+		return fmt.Errorf("cmd cannot safely set a value containing %q; use --shell powershell", value[i])
+	}
+	return nil
 }

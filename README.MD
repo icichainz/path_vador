@@ -21,7 +21,7 @@ up/down      choose an operation
 tab          move to the next field
 shift+tab    move to the previous field
 ctrl+r       clear the current operation
-q            quit
+esc/ctrl+c   quit
 ```
 
 ## Examples

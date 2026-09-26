@@ -109,3 +109,45 @@ func TestExportCommandRejectsInvalidVariableNames(t *testing.T) {
 		t.Fatal("expected invalid variable name to be rejected")
 	}
 }
+
+func TestResolveShellAutoDetection(t *testing.T) {
+	tests := []struct {
+		name string
+		goos string
+		env  map[string]string
+		want Shell
+	}{
+		{"windows powershell", "windows", map[string]string{"COMSPEC": `C:\WINDOWS\system32\cmd.exe`}, ShellPowerShell},
+		{"git bash", "windows", map[string]string{"COMSPEC": `C:\WINDOWS\system32\cmd.exe`, "SHELL": "/usr/bin/bash"}, ShellSH},
+		{"pwsh via SHELL", "linux", map[string]string{"SHELL": "/usr/bin/pwsh"}, ShellPowerShell},
+		{"zsh", "darwin", map[string]string{"SHELL": "/bin/zsh"}, ShellSH},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := ResolveShell("auto", test.goos, func(k string) string { return test.env[k] })
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got != test.want {
+				t.Fatalf("expected %q, got %q", test.want, got)
+			}
+		})
+	}
+}
+
+func TestExportCommandQuotesHostileValues(t *testing.T) {
+	got, err := ExportCommand(ShellPowerShell, "X", "a’; calc; ’")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if want := "$Env:X = 'a’’; calc; ’’'"; got != want {
+		t.Fatalf("expected %q, got %q", want, got)
+	}
+
+	for _, value := range []string{`a" & calc & "`, "%PATH%", "!X!", "a\nb"} {
+		if _, err := ExportCommand(ShellCMD, "X", value); err == nil {
+			t.Fatalf("expected cmd to reject %q", value)
+		}
+	}
+}

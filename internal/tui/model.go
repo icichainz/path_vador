@@ -138,6 +138,13 @@ func NewModel() *Model {
 	opList.SetShowStatusBar(false)
 	opList.SetShowPagination(false)
 	opList.SetFilteringEnabled(false)
+	// The inputs are always focused, so the list may only react to up/down;
+	// its default letter shortcuts (j, k, q, g, ...) would swallow typing.
+	opList.KeyMap = list.KeyMap{
+		CursorUp:   key.NewBinding(key.WithKeys("up")),
+		CursorDown: key.NewBinding(key.WithKeys("down")),
+	}
+	opList.DisableQuitKeybindings()
 
 	helpView := help.New()
 	helpView.Styles.ShortKey = lipgloss.NewStyle().Foreground(colorAccentCool)
@@ -548,7 +555,7 @@ func defaultKeys() keyMap {
 		Next:  key.NewBinding(key.WithKeys("tab"), key.WithHelp("tab", "next field")),
 		Prev:  key.NewBinding(key.WithKeys("shift+tab"), key.WithHelp("shift+tab", "prev field")),
 		Reset: key.NewBinding(key.WithKeys("ctrl+r"), key.WithHelp("ctrl+r", "reset")),
-		Quit:  key.NewBinding(key.WithKeys("q", "ctrl+c"), key.WithHelp("q", "quit")),
+		Quit:  key.NewBinding(key.WithKeys("esc", "ctrl+c"), key.WithHelp("esc", "quit")),
 	}
 }
 
@@ -610,10 +617,10 @@ func evaluatePreview(op operation, values []string) previewState {
 		}
 	case opEnvExport:
 		name := strings.TrimSpace(values[0])
-		value := strings.TrimSpace(values[1])
+		value := values[1]
 		shell := sanitizeShell(values[2])
-		if name == "" || value == "" {
-			return pendingPreview("Shell Command", "Fill in both the variable name and value to generate a command.")
+		if name == "" {
+			return pendingPreview("Shell Command", "Enter a variable name to generate a command.")
 		}
 		resolvedShell, err := pathvador.ResolveShell(shell, runtime.GOOS, os.Getenv)
 		if err != nil {
@@ -768,11 +775,4 @@ func clamp(value, low, high int) int {
 		return high
 	}
 	return value
-}
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
 }

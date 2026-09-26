@@ -69,6 +69,7 @@ class JoinTab extends StatelessWidget {
                 child: TextField(
                   key: const Key('fragment-field'),
                   controller: controller.fragmentField,
+                  autofocus: true,
                   style: ipMono(context),
                   onChanged: _onChanged,
                   onSubmitted: (_) => _commit(),

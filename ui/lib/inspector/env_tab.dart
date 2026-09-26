@@ -44,6 +44,7 @@ class EnvTab extends StatelessWidget {
           TextField(
             key: const Key('env-name-field'),
             controller: controller.envNameField,
+            autofocus: true,
             style: ipMono(context),
             decoration: ipFieldDecoration(context, hint: 'PROJECT_ROOT'),
           ),

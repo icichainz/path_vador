@@ -113,8 +113,9 @@ class _InspectorScreenState extends State<InspectorScreen> {
     final c = ipColors(context);
     return CallbackShortcuts(
       bindings: _shortcuts(),
+      // Each tab autofocuses its first field; the shortcuts above still
+      // see every key event that bubbles up from it.
       child: Focus(
-        autofocus: true,
         child: Scaffold(
           backgroundColor: c.surface,
           body: DropTarget(

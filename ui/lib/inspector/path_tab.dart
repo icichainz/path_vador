@@ -72,6 +72,8 @@ class PathTab extends StatelessWidget {
             child: TextField(
               key: const Key('path-field'),
               controller: controller.pathField,
+              // Opening the window or the Path tab means "about to type".
+              autofocus: true,
               style: ipMono(context, size: 15),
               textAlignVertical: TextAlignVertical.center,
               onSubmitted: (v) => rememberPath(settings, v),

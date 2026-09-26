@@ -63,14 +63,14 @@ class AppSettings {
   }
 
   Map<String, Object?> toJson() => {
-        'onboarded': onboarded,
-        'shell': shell.name,
-        'baseFolder': baseFolder,
-        'followDrops': followDrops,
-        'cliInstalled': cliInstalled,
-        'recents': recents,
-        'themeMode': themeMode.name,
-      };
+    'onboarded': onboarded,
+    'shell': shell.name,
+    'baseFolder': baseFolder,
+    'followDrops': followDrops,
+    'cliInstalled': cliInstalled,
+    'recents': recents,
+    'themeMode': themeMode.name,
+  };
 
   factory AppSettings.fromJson(Map<String, Object?> json) {
     return AppSettings(
@@ -97,8 +97,15 @@ class AppSettings {
       other.themeMode == themeMode;
 
   @override
-  int get hashCode => Object.hash(onboarded, shell, baseFolder, followDrops,
-      cliInstalled, Object.hashAll(recents), themeMode);
+  int get hashCode => Object.hash(
+    onboarded,
+    shell,
+    baseFolder,
+    followDrops,
+    cliInstalled,
+    Object.hashAll(recents),
+    themeMode,
+  );
 }
 
 /// Loads and saves [AppSettings]. The production implementation writes a

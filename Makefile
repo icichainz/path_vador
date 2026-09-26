@@ -16,7 +16,15 @@ else
 	UI_LIB := ui/native/windows/pathvador.dll
 endif
 
-.PHONY: build test ui-native clean
+MODE ?= debug
+ifeq ($(MODE),release)
+	MACOS_CONFIG := Release
+else
+	MACOS_CONFIG := Debug
+endif
+MACOS_APP := ui/build/macos/Build/Products/$(MACOS_CONFIG)/path_vador.app
+
+.PHONY: build test ui-native ui-macos clean
 
 # CLI and TUI binary.
 build:
@@ -28,6 +36,18 @@ test:
 # c-shared library loaded by the Flutter UI (see ui/ENGINE.md). Needs cgo.
 ui-native:
 	CGO_ENABLED=1 $(GO) build -buildmode=c-shared $(UI_LDFLAGS) -o $(UI_LIB) ./cmd/libpathvador
+
+# macOS app bundle with the engine in Contents/Frameworks and the CLI in
+# Contents/Helpers (where the onboarding installer looks for it). The copies
+# are signed ad hoc, then the bundle is re-signed keeping its entitlements.
+ui-macos: build ui-native
+	cd ui && flutter build macos --$(MODE)
+	mkdir -p "$(MACOS_APP)/Contents/Helpers"
+	cp $(UI_LIB) "$(MACOS_APP)/Contents/Frameworks/"
+	cp bin/path_vador "$(MACOS_APP)/Contents/Helpers/"
+	codesign --force --sign - "$(MACOS_APP)/Contents/Frameworks/libpathvador.dylib"
+	codesign --force --sign - "$(MACOS_APP)/Contents/Helpers/path_vador"
+	codesign --force --sign - --preserve-metadata=entitlements,identifier,flags "$(MACOS_APP)"
 
 clean:
 	rm -rf bin ui/native/macos ui/native/linux ui/native/windows

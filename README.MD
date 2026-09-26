@@ -47,11 +47,22 @@ If you pass arguments, `path_vador` keeps the current non-interactive mode for s
 ```text
 path_vador join <part> [<part>...]
 path_vador clean <path>
-path_vador abs <path>
+path_vador abs [--from <dir>] <path>
 path_vador base <path>
 path_vador dir <path>
+path_vador ext <path>
+path_vador stem <path>
 path_vador env export [--shell auto|sh|powershell|cmd] <NAME> <VALUE>
 path_vador env unset [--shell auto|sh|powershell|cmd] <NAME>
+```
+
+Path helpers print one result per call:
+
+```bash
+path_vador abs --from ~/dev ./internal/../pkg/env.go   # ~/dev/pkg/env.go, resolved
+path_vador ext pkg/pathvador/env.go                    # .go
+path_vador stem archive.tar.gz                         # archive.tar
+path_vador stem .bashrc                                # .bashrc (dotfiles keep their name)
 ```
 
 Use shell evaluation when you want the generated environment-variable command to affect your current shell session.
@@ -66,4 +77,13 @@ On PowerShell the previewed command can be evaluated like this:
 ```powershell
 Invoke-Expression (path_vador env export --shell powershell PROJECT_ROOT $PWD)
 Invoke-Expression (path_vador env unset --shell powershell PROJECT_ROOT)
+```
+
+## Build From Source
+
+```bash
+make build       # CLI/TUI binary in bin/path_vador
+make test        # go test ./...
+make ui-native   # c-shared library for the Flutter UI in ui/native/<os>/ (needs cgo)
+make clean
 ```

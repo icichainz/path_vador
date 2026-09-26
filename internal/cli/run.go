@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"runtime"
+	"strings"
 
 	"github.com/icichainz/path_vador/pkg/pathvador"
 )
@@ -15,9 +16,11 @@ Usage:
   path_vador help
   path_vador join <part> [<part>...]
   path_vador clean <path>
-  path_vador abs <path>
+  path_vador abs [--from <dir>] <path>
   path_vador base <path>
   path_vador dir <path>
+  path_vador ext <path>
+  path_vador stem <path>
   path_vador env export [--shell auto|sh|powershell|cmd] <NAME> <VALUE>
   path_vador env unset [--shell auto|sh|powershell|cmd] <NAME>
 `
@@ -48,10 +51,14 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		_, _ = fmt.Fprintln(stdout, pathvador.Clean(args[1]))
 		return 0
 	case "abs":
-		if len(args) != 2 {
+		from, remaining, err := parseFlag(args[1:], "--from", "")
+		if err != nil {
+			return writeError(stderr, err.Error())
+		}
+		if len(remaining) != 1 {
 			return writeError(stderr, "abs requires exactly one path")
 		}
-		absolutePath, err := pathvador.Abs(args[1])
+		absolutePath, err := pathvador.AbsFrom(from, remaining[0])
 		if err != nil {
 			return writeError(stderr, err.Error())
 		}
@@ -69,6 +76,18 @@ func Run(args []string, stdout, stderr io.Writer) int {
 		}
 		_, _ = fmt.Fprintln(stdout, pathvador.Dir(args[1]))
 		return 0
+	case "ext":
+		if len(args) != 2 {
+			return writeError(stderr, "ext requires exactly one path")
+		}
+		_, _ = fmt.Fprintln(stdout, pathvador.Ext(args[1]))
+		return 0
+	case "stem":
+		if len(args) != 2 {
+			return writeError(stderr, "stem requires exactly one path")
+		}
+		_, _ = fmt.Fprintln(stdout, pathvador.Stem(args[1]))
+		return 0
 	case "env":
 		return runEnv(args[1:], stdout, stderr)
 	default:
@@ -83,7 +102,7 @@ func runEnv(args []string, stdout, stderr io.Writer) int {
 
 	switch args[0] {
 	case "export":
-		shellName, remaining, err := parseShellArg(args[1:])
+		shellName, remaining, err := parseFlag(args[1:], "--shell", "auto")
 		if err != nil {
 			return writeError(stderr, err.Error())
 		}
@@ -103,7 +122,7 @@ func runEnv(args []string, stdout, stderr io.Writer) int {
 		_, _ = fmt.Fprintln(stdout, command)
 		return 0
 	case "unset":
-		shellName, remaining, err := parseShellArg(args[1:])
+		shellName, remaining, err := parseFlag(args[1:], "--shell", "auto")
 		if err != nil {
 			return writeError(stderr, err.Error())
 		}
@@ -127,17 +146,15 @@ func runEnv(args []string, stdout, stderr io.Writer) int {
 	}
 }
 
-func parseShellArg(args []string) (string, []string, error) {
-	if len(args) == 0 {
-		return "auto", args, nil
-	}
-
-	if args[0] != "--shell" {
-		return "auto", args, nil
+// parseFlag reads an optional leading "<flag> <value>" pair and returns the
+// value (or fallback when the flag is absent) with the remaining arguments.
+func parseFlag(args []string, flag, fallback string) (string, []string, error) {
+	if len(args) == 0 || args[0] != flag {
+		return fallback, args, nil
 	}
 
 	if len(args) < 2 {
-		return "", nil, fmt.Errorf("missing shell value after --shell")
+		return "", nil, fmt.Errorf("missing %s value after %s", strings.TrimPrefix(flag, "--"), flag)
 	}
 
 	return args[1], args[2:], nil

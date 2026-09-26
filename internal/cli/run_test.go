@@ -91,3 +91,77 @@ func TestRunReportsUsageForInvalidCommand(t *testing.T) {
 		t.Fatalf("expected usage text in stderr, got %q", stderr.String())
 	}
 }
+
+func TestRunAbsFrom(t *testing.T) {
+	root, err := filepath.Abs(filepath.Join("testroot", "dev"))
+	if err != nil {
+		t.Fatalf("abs: %v", err)
+	}
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := Run([]string{"abs", "--from", root, filepath.Join("internal", "..", "pkg", "env.go")}, &stdout, &stderr)
+	if exitCode != 0 {
+		t.Fatalf("expected exit code 0, got %d (stderr %q)", exitCode, stderr.String())
+	}
+
+	expected := filepath.Join(root, "pkg", "env.go") + "\n"
+	if stdout.String() != expected {
+		t.Fatalf("expected stdout %q, got %q", expected, stdout.String())
+	}
+}
+
+func TestRunAbsFromMissingValue(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := Run([]string{"abs", "--from"}, &stdout, &stderr)
+	if exitCode != 1 {
+		t.Fatalf("expected exit code 1, got %d", exitCode)
+	}
+
+	if !strings.Contains(stderr.String(), "missing from value after --from") {
+		t.Fatalf("expected missing value error, got %q", stderr.String())
+	}
+}
+
+func TestRunExtAndStem(t *testing.T) {
+	tests := []struct {
+		args     []string
+		expected string
+	}{
+		{args: []string{"ext", filepath.Join("pkg", "env.go")}, expected: ".go\n"},
+		{args: []string{"ext", "archive.tar.gz"}, expected: ".gz\n"},
+		{args: []string{"stem", filepath.Join("pkg", "env.go")}, expected: "env\n"},
+		{args: []string{"stem", "archive.tar.gz"}, expected: "archive.tar\n"},
+		{args: []string{"stem", ".bashrc"}, expected: ".bashrc\n"},
+	}
+
+	for _, tt := range tests {
+		var stdout bytes.Buffer
+		var stderr bytes.Buffer
+
+		exitCode := Run(tt.args, &stdout, &stderr)
+		if exitCode != 0 {
+			t.Fatalf("%v: expected exit code 0, got %d", tt.args, exitCode)
+		}
+		if stdout.String() != tt.expected {
+			t.Fatalf("%v: expected stdout %q, got %q", tt.args, tt.expected, stdout.String())
+		}
+	}
+}
+
+func TestRunEnvMissingShellValue(t *testing.T) {
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	exitCode := Run([]string{"env", "export", "--shell"}, &stdout, &stderr)
+	if exitCode != 1 {
+		t.Fatalf("expected exit code 1, got %d", exitCode)
+	}
+
+	if !strings.Contains(stderr.String(), "missing shell value after --shell") {
+		t.Fatalf("expected missing shell error, got %q", stderr.String())
+	}
+}

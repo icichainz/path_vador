@@ -1,2 +1,2 @@
-- setup the main function to run the program
-- integrate charms and  cobra.
+- add clipboard support so the TUI can copy the current preview directly
+- add more path helpers such as relative and extension inspection commands

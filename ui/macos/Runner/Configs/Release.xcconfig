@@ -1,2 +1,6 @@
 #include "../../Flutter/Flutter-Release.xcconfig"
 #include "Warnings.xcconfig"
+
+// Apple Silicon only: libpathvador is built for the host arch, and Flutter
+// 3.38's lipo check fails on Xcode 27 when verifying two architectures.
+EXCLUDED_ARCHS = x86_64

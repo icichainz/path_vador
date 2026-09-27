@@ -24,7 +24,7 @@ else
 endif
 MACOS_APP := ui/build/macos/Build/Products/$(MACOS_CONFIG)/path_vador.app
 
-.PHONY: build test ui-native ui-macos clean
+.PHONY: build test ui-native ui-macos dmg clean
 
 # CLI and TUI binary.
 build:
@@ -49,5 +49,9 @@ ui-macos: build ui-native
 	codesign --force --sign - "$(MACOS_APP)/Contents/Helpers/path_vador"
 	codesign --force --sign - --preserve-metadata=entitlements,identifier,flags "$(MACOS_APP)"
 
+# Release app packaged as dist/path_vador-<version>.dmg (see the script for signing).
+dmg:
+	scripts/make_dmg.sh
+
 clean:
-	rm -rf bin ui/native/macos ui/native/linux ui/native/windows
+	rm -rf bin dist ui/native/macos ui/native/linux ui/native/windows

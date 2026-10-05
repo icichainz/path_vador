@@ -567,3 +567,73 @@ InputDecoration ipFieldDecoration(
     suffixIcon: suffix,
   );
 }
+
+/// One line of text that drops characters from the middle when it does not
+/// fit, so both ends of a path stay readable: `~/Android…/tenant-console`.
+/// The full text is available as a tooltip.
+class MiddleEllipsisText extends StatelessWidget {
+  const MiddleEllipsisText(this.text, {super.key, required this.style});
+
+  final String text;
+  final TextStyle style;
+
+  /// The longest `head…tail` form of [text] that fits [maxWidth], favouring
+  /// the tail. Returns [text] unchanged when it already fits.
+  static String fit(
+    String text,
+    TextStyle style,
+    double maxWidth,
+    TextScaler scaler,
+  ) {
+    bool fits(String s) {
+      final painter = TextPainter(
+        text: TextSpan(text: s, style: style),
+        textDirection: TextDirection.ltr,
+        textScaler: scaler,
+        maxLines: 1,
+      )..layout();
+      final ok = painter.width <= maxWidth;
+      painter.dispose();
+      return ok;
+    }
+
+    if (fits(text)) return text;
+    final chars = text.characters;
+    String cut(int keep) {
+      final tail = (keep * 2 / 3).ceil();
+      final head = keep - tail;
+      return '${chars.take(head)}…${chars.takeLast(tail)}';
+    }
+
+    // Binary search the number of characters kept.
+    var low = 0;
+    var high = chars.length - 1;
+    while (low < high) {
+      final mid = (low + high + 1) ~/ 2;
+      if (fits(cut(mid))) {
+        low = mid;
+      } else {
+        high = mid - 1;
+      }
+    }
+    return cut(low);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scaler = MediaQuery.textScalerOf(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final shown = fit(text, style, constraints.maxWidth, scaler);
+        final label = Text(
+          shown,
+          style: style,
+          maxLines: 1,
+          softWrap: false,
+          overflow: TextOverflow.clip,
+        );
+        return shown == text ? label : Tooltip(message: text, child: label);
+      },
+    );
+  }
+}

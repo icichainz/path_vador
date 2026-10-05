@@ -98,45 +98,9 @@ class PathTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: PvSpace.sm),
-          Row(
-            children: [
-              Flexible(
-                child: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      'Relative paths resolve against ',
-                      style: TextStyle(color: c.onSurfaceSubtle, fontSize: 12),
-                    ),
-                    Text(
-                      tildePath(controller.effectiveBase, home),
-                      style: ipMono(context, size: 12, color: c.onSurfaceMuted),
-                    ),
-                    Text(
-                      ' · ',
-                      style: TextStyle(color: c.onSurfaceSubtle, fontSize: 12),
-                    ),
-                    InkWell(
-                      onTap: () => _changeBase(settings),
-                      child: Text(
-                        'change',
-                        style: TextStyle(
-                          color: c.tertiary,
-                          fontSize: 12,
-                          decoration: TextDecoration.underline,
-                          decorationColor: c.tertiary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: PvSpace.md),
-              Text(
-                'or drop a file anywhere here',
-                style: TextStyle(color: c.onSurfaceSubtle, fontSize: 12),
-              ),
-            ],
+          _BaseCaption(
+            base: tildePath(controller.effectiveBase, home),
+            onChange: () => _changeBase(settings),
           ),
           const SizedBox(height: PvSpace.xl),
           _results(context),
@@ -236,6 +200,87 @@ class _RecentChip extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// "Relative paths resolve against `base` · change", always on one line.
+/// The base folder gives up characters from its middle first; the drop hint
+/// on the right disappears when the window or the text scale leaves no room.
+class _BaseCaption extends StatelessWidget {
+  const _BaseCaption({required this.base, required this.onChange});
+
+  final String base;
+  final VoidCallback onChange;
+
+  static const _prefix = 'Relative paths resolve against ';
+  static const _hint = 'or drop a file anywhere here';
+
+  /// Room the base folder needs before the hint is worth showing.
+  static const double _minBaseWidth = 96;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = ipColors(context);
+    final scaler = MediaQuery.textScalerOf(context);
+    final subtle = TextStyle(color: c.onSurfaceSubtle, fontSize: 12);
+    final link = TextStyle(
+      color: c.tertiary,
+      fontSize: 12,
+      decoration: TextDecoration.underline,
+      decorationColor: c.tertiary,
+    );
+
+    double width(String text, TextStyle style) {
+      final painter = TextPainter(
+        text: TextSpan(text: text, style: style),
+        textDirection: TextDirection.ltr,
+        textScaler: scaler,
+        maxLines: 1,
+      )..layout();
+      final w = painter.width;
+      painter.dispose();
+      return w;
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final fixed = width(' · ', subtle) + width('change', link);
+        final prefixWidth = width(_prefix, subtle);
+        final hintWidth = PvSpace.md + width(_hint, subtle);
+        final free = constraints.maxWidth - fixed;
+        final showPrefix = free - prefixWidth >= _minBaseWidth;
+        final showHint =
+            showPrefix && free - prefixWidth - hintWidth >= _minBaseWidth;
+        return Row(
+          children: [
+            if (showPrefix) Text(_prefix, style: subtle, softWrap: false),
+            // Expanded keeps the hint at the right edge while the base
+            // folder can still use all the room in between.
+            Expanded(
+              child: Row(
+                children: [
+                  Flexible(
+                    child: MiddleEllipsisText(
+                      base,
+                      style: ipMono(context, size: 12, color: c.onSurfaceMuted),
+                    ),
+                  ),
+                  Text(' · ', style: subtle),
+                  InkWell(
+                    onTap: onChange,
+                    child: Text('change', style: link),
+                  ),
+                ],
+              ),
+            ),
+            if (showHint) ...[
+              const SizedBox(width: PvSpace.md),
+              Text(_hint, style: subtle, softWrap: false),
+            ],
+          ],
+        );
+      },
     );
   }
 }

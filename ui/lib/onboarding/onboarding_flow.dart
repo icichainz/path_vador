@@ -256,7 +256,7 @@ class _Header extends StatelessWidget {
           const HelmIcon(size: 24),
           const SizedBox(width: 10),
           Text(
-            'path_vador',
+            'PathVador',
             style: pvMono(
               context,
               size: 14,

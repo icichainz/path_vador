@@ -75,7 +75,7 @@ Future<void> _shortcut(WidgetTester tester, LogicalKeyboardKey key) async {
 void main() {
   testWidgets('header shows the detected shell and OS', (tester) async {
     await _Harness().pump(tester);
-    expect(find.text('path_vador'), findsOneWidget);
+    expect(find.text('PathVador'), findsOneWidget);
     expect(find.text('sh · darwin'), findsOneWidget);
     expect(
       find.text('Drop a file or folder, or type a path above.'),

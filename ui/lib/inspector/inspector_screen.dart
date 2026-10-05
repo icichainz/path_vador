@@ -180,7 +180,7 @@ class _Header extends StatelessWidget {
       child: Row(
         children: [
           Text(
-            'path_vador',
+            'PathVador',
             style: ipMono(
               context,
               size: 15,

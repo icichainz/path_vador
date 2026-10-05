@@ -63,7 +63,7 @@ class WelcomeStep extends StatelessWidget {
         ),
         const SizedBox(height: 28),
         Text(
-          'Welcome to path_vador',
+          'Welcome to PathVador',
           style: text.headlineSmall,
           textAlign: TextAlign.center,
         ),
@@ -177,7 +177,7 @@ class ShellStep extends StatelessWidget {
         _StepIntro(
           title: 'Which shell do you use?',
           body:
-              'This only shapes the env commands path_vador writes for you. '
+              'This only shapes the env commands PathVador writes for you. '
               '$found',
         ),
         ShellChoiceList(

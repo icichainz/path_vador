@@ -120,7 +120,7 @@ void main() {
   testWidgets('walking all five steps sets onboarded', (tester) async {
     await pumpFlow(tester);
 
-    expect(find.text('Welcome to path_vador'), findsOneWidget);
+    expect(find.text('Welcome to PathVador'), findsOneWidget);
     expect(find.text('Skip setup'), findsNothing);
     await tapPrimary(tester, 'Set up in a minute');
 
@@ -180,7 +180,7 @@ void main() {
     await tapPrimary(tester, 'Set up in a minute');
     await tester.tap(find.widgetWithText(OutlinedButton, 'Back'));
     await tester.pumpAndSettle();
-    expect(find.text('Welcome to path_vador'), findsOneWidget);
+    expect(find.text('Welcome to PathVador'), findsOneWidget);
   });
 
   testWidgets('Skip sets defaults and onboarded', (tester) async {

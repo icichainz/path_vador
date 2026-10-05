@@ -47,7 +47,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Welcome to path_vador'), findsOneWidget);
+    expect(find.text('Welcome to PathVador'), findsOneWidget);
   });
 
   testWidgets('engine error screen explains where the library is', (

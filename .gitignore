@@ -1,3 +1,5 @@
 bin/
 ui/native/
 dist/
+.DS_Store
+.vscode/

@@ -22,7 +22,7 @@ ifeq ($(MODE),release)
 else
 	MACOS_CONFIG := Debug
 endif
-MACOS_APP := ui/build/macos/Build/Products/$(MACOS_CONFIG)/path_vador.app
+MACOS_APP := ui/build/macos/Build/Products/$(MACOS_CONFIG)/PathVador.app
 
 .PHONY: build test ui-native ui-macos dmg clean
 
@@ -49,7 +49,7 @@ ui-macos: build ui-native
 	codesign --force --sign - "$(MACOS_APP)/Contents/Helpers/path_vador"
 	codesign --force --sign - --preserve-metadata=entitlements,identifier,flags "$(MACOS_APP)"
 
-# Release app packaged as dist/path_vador-<version>.dmg (see the script for signing).
+# Release app packaged as dist/PathVador-<version>.dmg (see the script for signing).
 dmg:
 	scripts/make_dmg.sh
 

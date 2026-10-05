@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds the release app and packages it as dist/path_vador-<version>.dmg.
+# Builds the release app and packages it as dist/PathVador-<version>.dmg.
 #
 # Usage:
 #   scripts/make_dmg.sh                 # ad-hoc signed; fine on this Mac
@@ -13,7 +13,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-APP_NAME=path_vador
+APP_NAME=PathVador
 APP="ui/build/macos/Build/Products/Release/${APP_NAME}.app"
 VERSION=$(sed -n 's/^version: *\([^+]*\).*/\1/p' ui/pubspec.yaml)
 DIST=dist

@@ -26,7 +26,7 @@ class PathVadorApp extends StatelessWidget {
           builder: (context) {
             final s = SettingsScope.of(context).value;
             return MaterialApp(
-              title: 'path_vador',
+              title: 'PathVador',
               debugShowCheckedModeBanner: false,
               theme: pvTheme(Brightness.light),
               darkTheme: pvTheme(Brightness.dark),
@@ -61,7 +61,7 @@ class EngineErrorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'path_vador',
+      title: 'PathVador',
       debugShowCheckedModeBanner: false,
       theme: pvTheme(Brightness.light),
       darkTheme: pvTheme(Brightness.dark),
@@ -90,7 +90,7 @@ class EngineErrorScreen extends StatelessWidget {
             children: [
               const HelmIcon(size: 56),
               const SizedBox(height: 24),
-              Text("path_vador couldn't start", style: text.headlineSmall),
+              Text("PathVador couldn't start", style: text.headlineSmall),
               const SizedBox(height: 10),
               Text(
                 'The window needs the Go library that does the real work, '

@@ -14,7 +14,7 @@ Future<void> main() async {
   const options = WindowOptions(
     size: pvDefaultWindowSize,
     minimumSize: pvMinWindowSize,
-    title: 'path_vador',
+    title: 'PathVador',
     center: true,
     titleBarStyle: TitleBarStyle.normal,
   );
